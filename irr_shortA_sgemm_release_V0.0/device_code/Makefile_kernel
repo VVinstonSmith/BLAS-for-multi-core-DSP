@@ -1,0 +1,31 @@
+GCCROOT=/thfs1/software/programming_env/mt3000_programming_env/dsp_compiler
+ENV_ROOT=/thfs1/software/programming_env/mt3000_programming_env/hthreads
+
+CC=MT-3000-gcc
+AR=MT-3000-ar
+LD=MT-3000-ld
+
+CFLAGS=-c -O2 -fenable-m3000 -ffunction-sections -flax-vector-conversions -I./ -I$(ENV_ROOT)/include -I$(GCCROOT)/include/
+LDFLAGS= -L$(ENV_ROOT)/lib --gc-sections -Tdsp.lds
+SRC=irr_shortA_sgemm_kernel.c
+OBJ=irr_shortA_sgemm_kernel.o
+ASM=irr_shortA_sgemm_kernel.s
+OUT=irr_shortA_sgemm_kernel.out
+DAT=irr_shortA_sgemm_kernel.dat
+LIB=lib_irr_shortA_sgemm_kernel.a
+
+ALL: $(OUT)
+	$(GCCROOT)/bin/MT-3000-makedat -J $(OUT)
+	$(GCCROOT)/bin/MT-3000-ar -r $(LIB) $(OBJ)
+	mv $(LIB) ../lib
+	rm $(OUT) $(OBJ) $(DAT)
+
+$(OBJ): $(SRC)
+	$(GCCROOT)/bin/$(CC) $(CFLAGS) $(SRC) -o $(OBJ) 
+	# $(GCCROOT)/bin/$(CC) $(CFLAGS) $(SRC) -o $(ASM)
+
+$(OUT): $(OBJ)
+	$(GCCROOT)/bin/$(LD) $(LDFLAGS) $(OBJ) $(ENV_ROOT)/lib/libhthread_device.a $(GCCROOT)/lib/vlib3000.a $(GCCROOT)/lib/slib3000.a -o $(OUT) 
+
+# clean:
+# 	rm $(OUT) $(OBJ) $(DAT)

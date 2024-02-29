@@ -1,0 +1,33 @@
+GCCROOT=/thfs1/software/programming_env/mt3000_programming_env/dsp_compiler
+ENV_ROOT=/thfs1/software/programming_env/mt3000_programming_env/hthreads
+
+CC=MT-3000-gcc
+AR=MT-3000-ar
+LD=MT-3000-ld
+
+CFLAGS=-c -O2 -fenable-m3000 -ffunction-sections -flax-vector-conversions -I./ -I../include -I$(ENV_ROOT)/include -I$(GCCROOT)/include/
+LDFLAGS= -L../lib -L$(ENV_ROOT)/lib --gc-sections -Tdsp.lds
+# LDFLAGS= -L../../mtblas_dev/libmtblas/include  -L../lib -L$(ENV_ROOT)/lib --gc-sections -Tdsp.lds
+SRC=sgemm_launcher.c
+OBJ=sgemm_launcher.o
+ASM=sgemm_launcher.s
+OUT=sgemm_launcher.out
+DAT=sgemm_launcher.dat
+
+ALL: $(OUT)
+	$(GCCROOT)/bin/MT-3000-makedat -J $(OUT)
+	cp ${DAT} ../bin
+	rm $(OUT) $(OBJ) $(DAT)
+
+$(OBJ): $(SRC)
+	$(GCCROOT)/bin/$(CC) $(CFLAGS) $(SRC) -o $(OBJ) 
+	# $(GCCROOT)/bin/$(CC) $(CFLAGS) $(SRC) -o $(ASM)
+
+$(OUT): $(OBJ)
+	$(GCCROOT)/bin/$(LD) $(LDFLAGS) $(OBJ) ../lib/libsgemm_kernel.a $(ENV_ROOT)/lib/libhthread_device.a $(GCCROOT)/lib/vlib3000.a $(GCCROOT)/lib/slib3000.a -o $(OUT) 
+# $(GCCROOT)/bin/$(LD) $(LDFLAGS) $(OBJ) ../../mtblas_dev/libmtblas/lib/mtblasdev.a ../lib/libsgemm_kernel.a $(ENV_ROOT)/lib/libhthread_device.a $(GCCROOT)/lib/vlib3000.a $(GCCROOT)/lib/slib3000.a -o $(OUT) 
+
+
+
+# clean:
+# 	rm $(OUT) $(OBJ) $(DAT)
